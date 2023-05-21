@@ -1,0 +1,34 @@
+*** main tasks ***
+*********** 20-05 ***********
+- functionality	
+	- common
+		- navigation - move to Router
+    //- dashboard
+        //- loading
+	//- receive
+		//- coin title (balance - total/coin)
+		//- copy links
+	- send coin/token
+		- form
+		- confirm dialog
+		- execute transaction
+    - invite
+    - settings
+        - add coin/token    
+        - show wallet secured data (with password)
+	- links
+		- transactions 
+		- info
+		- chart
+- N design	
+	- dark/light
+	- mobile/desktop
+
+
+exhibit net primary good glance desk wealth puppy lottery know jazz ramp
+MTW-Ethereum
+https://eth.morethanwallet.com
+1333
+https://prev.morethanwallet.com/testnet/blockexplorer
+0xA014A5E978B9A542b2065Ba4a29D68De9b3431D1
+0x6319276ac7962A04696064261e082f8c48dF9376
