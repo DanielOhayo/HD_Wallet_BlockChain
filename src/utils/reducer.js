@@ -25,8 +25,8 @@ export const reducer = (state = InitState, action) => {
                 ...state,
                 wallet: action.param.wallet,
                 tickers: action.param.tickers,
-                balances: action.param.balances,
-                balance: action.param.balance
+                balances: action.param.balances
+                // balance: action.param.balance
             }
         case 'SET_COIN':
             return {
@@ -59,6 +59,11 @@ export const reducer = (state = InitState, action) => {
             return {
                 ...state,
                 tickers: action.param
+            }
+        case 'SET_BALANCE':
+            return {
+                ...state,
+                balance: action.param
             }
         case 'SET_BALANCES':
             return {

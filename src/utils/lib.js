@@ -1,6 +1,7 @@
 import { ethers } from 'ethers'
 import { coinList, coinsListTest } from './coinList'
-import { getBalances, getTickers } from "./data"
+import { getBalances, getTickers, getBalancesGe } from "./data"
+
 
 const derivationPath = {
     ADA: "m/1852'/1815'/0'/",
@@ -15,7 +16,8 @@ const derivationPath = {
     ETH: "m/44'/60'/0'/",
     LTC: "m/44'/2'/0'/",
     MATIC: "m/44'/60'/0'/",
-    SOL: "m/44'/501'/0'/"
+    SOL: "m/44'/501'/0'/",
+    Celo: "m/44'/52752'/0'/"
 }
 
 export const CreateMnemonic = async () => {
@@ -50,7 +52,7 @@ export const CreateWallets = async (name) => {
 
 export const RestoreWallets = async (name, mnemonic) => {
     // default mainnet accounts
-    const BTC = await CreateWallet("BTC", mnemonic)
+    const Celo = await CreateWallet("Celo", mnemonic)
     const ETH = await CreateWallet("ETH", mnemonic)
     // default testnet accounts
     const wBTC = CreateWalletTest("wBTC", ETH.address, ETH.privateKey)
@@ -61,7 +63,7 @@ export const RestoreWallets = async (name, mnemonic) => {
         mnemonic,
         name: name,
         mainnet: {
-            "BTC": BTC,
+            "Celo": Celo,
             "ETH": ETH
         },
         testnet: {
@@ -84,15 +86,15 @@ export const setWalletAndFetchData = (wallet, dispatch, cb = () => { }) => {
                 return acc
             }, 0)
             const balance = b.toLocaleString('en-US', { maximumFractionDigits: 2 })
-            dispatch({ type: 'SET_ALL', param: { wallet, tickers, balances, balance } })
+            // const balance = getBalancesGe(wallet.mainnet.ETH.address)
+
+            dispatch({ type: 'SET_ALL', param: { wallet, tickers, balances/*, balance */ } })
             cb()
         })
     })
     // goerli
 
 }
-
-
 
 //setting page - if have password - 12 wored
 export const send = async () => {

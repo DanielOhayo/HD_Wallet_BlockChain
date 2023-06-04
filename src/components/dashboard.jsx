@@ -37,7 +37,10 @@ export default function Dashboard() {
         setWalletAndFetchData(w, dispatch);
       }, 30000);
       console.log(state);
-      getBalancesGe(w.mainnet["ETH"].address).then((b) => console.log(b));
+      getBalancesGe(w.mainnet["ETH"].address).then((b) => {
+        dispatch({ type: "SET_BALANCE", param: b });
+        console.log(b);
+      });
     } else {
       dispatch({ type: "SET_VIEW", param: "home" });
     }
