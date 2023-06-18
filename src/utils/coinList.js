@@ -142,7 +142,7 @@ export const coinList = {
     },
     "Celo": {
         id: "celo",
-        derivation: "m/44'/52752'/0'/0'",
+        derivation: "m/44'/52752'/0'/'",
         name: "Celo",
         website: "https://celo.org/",
         prefix: "0x",

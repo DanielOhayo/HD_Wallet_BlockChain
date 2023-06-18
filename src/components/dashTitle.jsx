@@ -5,7 +5,7 @@ import { price, change, cost } from "../utils/utils";
 export default function DashTitle() {
   const { state, dispatch } = useContext(Context);
   const [symbol, setSymbol] = useState("");
-  console.log("dani " + state.balance);
+
   useEffect(() => {
     if (state.selectedCoin) {
       setSymbol(

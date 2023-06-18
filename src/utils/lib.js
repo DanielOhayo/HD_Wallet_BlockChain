@@ -52,24 +52,24 @@ export const CreateWallets = async (name) => {
 
 export const RestoreWallets = async (name, mnemonic) => {
     // default mainnet accounts
-    const Celo = await CreateWallet("Celo", mnemonic)
+    const AVAX = await CreateWallet("AVAX", mnemonic)
     const ETH = await CreateWallet("ETH", mnemonic)
     // default testnet accounts
-    const wBTC = CreateWalletTest("wBTC", ETH.address, ETH.privateKey)
+    // const wBTC = CreateWalletTest("wBTC", ETH.address, ETH.privateKey)
     const wETH = CreateWalletTest("wETH", ETH.address, ETH.privateKey)
-    const wUSD = CreateWalletTest("wUSD", ETH.address, ETH.privateKey)
+    // const wUSD = CreateWalletTest("wUSD", ETH.address, ETH.privateKey)
 
     return {
         mnemonic,
         name: name,
         mainnet: {
-            "Celo": Celo,
+            "AVAX": AVAX,
             "ETH": ETH
         },
         testnet: {
-            "wBTC": wBTC,
+            // "wBTC": wBTC,
             "wETH": wETH,
-            "wUSD": wUSD
+            // "wUSD": wUSD
         }
     }
 }
@@ -78,17 +78,18 @@ export const setWalletAndFetchData = (wallet, dispatch, cb = () => { }) => {
     // Alex testnet only
     getBalances(wallet.mainnet.ETH.address).then(balances => {
         getTickers().then(tickers => {
-            let b = Object.entries(balances).reduce((acc, [k, v]) => {
-                const key = k.substring(1) // for testnet only
-                if (tickers[key]) {
-                    acc += v * parseFloat(tickers[key].p)
-                }
-                return acc
-            }, 0)
-            const balance = b.toLocaleString('en-US', { maximumFractionDigits: 2 })
+            // let b = Object.entries(balances).reduce((acc, [key, v]) => {
+            //     //const key = k.substring(1) // for testnet only
+            //     if (tickers[key]) {
+            //         acc += v * parseFloat(tickers[key].p)
+            //     }
+            //     return acc
+            // }, 0)
+            // const balance = b.toLocaleString('en-US', { maximumFractionDigits: 2 })
             // const balance = getBalancesGe(wallet.mainnet.ETH.address)
-
-            dispatch({ type: 'SET_ALL', param: { wallet, tickers, balances/*, balance */ } })
+            // const wEthBalances = getBalances(wallet.mainnet.ETH.address)
+            // console.log("dani in setWalletAndFetchData= " + balance)
+            dispatch({ type: 'SET_ALL', param: { wallet, tickers } })
             cb()
         })
     })
@@ -102,7 +103,7 @@ export const send = async () => {
     //const sender = "***"  // address
     const recipientAddress = "0xFc21E7316AC1453d4Ec99a9EaeD7d7a3BC03E879"
     const wallet = new ethers.Wallet(privateKey)
-    const networkUri = "https://eth.morethanwallet.com" //
+    const networkUri = "https://net.mtw-testnet.com" //
     const provider = new ethers.providers.JsonRpcProvider(networkUri)
 
     const amount = '1.0'
