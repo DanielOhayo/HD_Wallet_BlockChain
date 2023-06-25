@@ -1,6 +1,16 @@
 import { ethers } from 'ethers'
 import { coinList, coinsListTest } from './coinList'
-import { getBalances, getTickers, getBalancesGe } from "./data"
+import { getBalance, getTickers, getBalancesGe } from "./data"
+const APP_TESTNET = "https://net.mtw-testnet.com"
+const APP_GOERLI = "https://goerli.infura.io/v3/2ceb338b953b495aa1f3ad87c9657293"
+const APP_MAINNET = "https://avalanche-mainnet.infura.io/v3/2ceb338b953b495aa1f3ad87c9657293"
+
+const providerWETH = new ethers.providers.JsonRpcProvider(APP_TESTNET)
+const providerETH = new ethers.providers.JsonRpcProvider(APP_GOERLI)
+const providerAVAX = new ethers.providers.JsonRpcProvider(APP_MAINNET)
+
+
+export const fixedGasLimit = 80000
 
 
 const derivationPath = {
@@ -37,7 +47,6 @@ export const CreateWallet = async (coin, mnemonic, index = 0) => {
 
     const coinInfo = coinList[coin]
     return { coinInfo, address, privateKey }
-
 }
 
 export const CreateWalletTest = (coin, address, privateKey) => {
@@ -54,11 +63,9 @@ export const RestoreWallets = async (name, mnemonic) => {
     // default mainnet accounts
     const AVAX = await CreateWallet("AVAX", mnemonic)
     const ETH = await CreateWallet("ETH", mnemonic)
-    // default testnet accounts
-    // const wBTC = CreateWalletTest("wBTC", ETH.address, ETH.privateKey)
+    // default testnet account
     const wETH = CreateWalletTest("wETH", ETH.address, ETH.privateKey)
-    // const wUSD = CreateWalletTest("wUSD", ETH.address, ETH.privateKey)
-
+    console.log("dani private key = " + ETH.privateKey)
     return {
         mnemonic,
         name: name,
@@ -67,61 +74,143 @@ export const RestoreWallets = async (name, mnemonic) => {
             "ETH": ETH
         },
         testnet: {
-            // "wBTC": wBTC,
             "wETH": wETH,
-            // "wUSD": wUSD
         }
     }
 }
 
 export const setWalletAndFetchData = (wallet, dispatch, cb = () => { }) => {
     // Alex testnet only
-    getBalances(wallet.mainnet.ETH.address).then(balances => {
+    console.log(wallet)
+    getBalance('mtw', 'wETH', wallet.mainnet.ETH.address).then(balances => {
         getTickers().then(tickers => {
-            // let b = Object.entries(balances).reduce((acc, [key, v]) => {
-            //     //const key = k.substring(1) // for testnet only
-            //     if (tickers[key]) {
-            //         acc += v * parseFloat(tickers[key].p)
-            //     }
-            //     return acc
-            // }, 0)
-            // const balance = b.toLocaleString('en-US', { maximumFractionDigits: 2 })
-            // const balance = getBalancesGe(wallet.mainnet.ETH.address)
-            // const wEthBalances = getBalances(wallet.mainnet.ETH.address)
-            // console.log("dani in setWalletAndFetchData= " + balance)
             dispatch({ type: 'SET_ALL', param: { wallet, tickers } })
             cb()
         })
     })
     // goerli
-
 }
 
-//setting page - if have password - 12 wored
-export const send = async () => {
-    const privateKey = "***********" // private key
-    //const sender = "***"  // address
-    const recipientAddress = "0xFc21E7316AC1453d4Ec99a9EaeD7d7a3BC03E879"
+export const sendWETH = async (sender, privateKey, recipient, amount, fee, cb = console.log) => {
+    if (!fee) {
+        const f = await getFee("wETH", sender, recipient, amount)
+        fee = { gasLimit: f[1], gasPrice: f[0].recommended }
+    }
     const wallet = new ethers.Wallet(privateKey)
-    const networkUri = "https://net.mtw-testnet.com" //
-    const provider = new ethers.providers.JsonRpcProvider(networkUri)
-
-    const amount = '1.0'
     const value = ethers.utils.parseEther(amount)
+    const nonce = await providerWETH.getTransactionCount(sender, "latest")
 
     const tx = {
-        to: recipientAddress,
-        value: value, //.mul(ethers.constants.WeiPerEther), 
-        //nonce: nonce,
-        gasLimit: 21000,
-        gasPrice: ethers.BigNumber.from("20000000000"),
-        chainId: 12345
+        to: recipient,
+        value: value,
+        nonce: nonce,
+        gasPrice: fee.gasPrice,
+        gasLimit: fee.gasLimit,
+        chainId: (await providerWETH.getNetwork()).chainId
     }
-    //const number =  ethers.BigNumber.from("20000000000"),
+    const signedTransaction = await wallet.signTransaction(tx)
+    cb({ type: 'SET_TRANSACTION_START' })
+    providerWETH.sendTransaction(signedTransaction)
+        .then(tr => {
+            cb({ type: 'SET_TRANSACTION_STATUS', param: 'pending' })
+            trackTransactionStatus(tr.hash, cb)
+        })
+}
 
-    console.log(tx)
-    //return
-    const signedTransaction = wallet.signTransaction(tx)
-    const txHash = await provider.sendTransaction(signedTransaction)
-    console.log(`Transaction hash: ${txHash}`)
+export const sendETH = async (sender, privateKey, recipient, amount, fee, cb = console.log) => {
+    if (!fee) {
+        const f = await getFee("ETH", sender, recipient, amount)
+        fee = { gasLimit: f[1], gasPrice: f[0].recommended }
+    }
+    const wallet = new ethers.Wallet(privateKey)
+    const value = ethers.utils.parseEther(amount)
+    const nonce = await providerETH.getTransactionCount(sender, "latest")
+
+    const tx = {
+        to: recipient,
+        value: value,
+        nonce: nonce,
+        gasPrice: fee.gasPrice,
+        gasLimit: fee.gasLimit,
+        chainId: (await providerETH.getNetwork()).chainId
+    }
+    const signedTransaction = await wallet.signTransaction(tx)
+    cb({ type: 'SET_TRANSACTION_START' })
+    providerETH.sendTransaction(signedTransaction)
+        .then(tr => {
+            cb({ type: 'SET_TRANSACTION_STATUS', param: 'pending' })
+            trackTransactionStatus(tr.hash, cb)
+        })
+}
+
+export const sendAVAX = async (sender, privateKey, recipient, amount, fee, cb = console.log) => {
+    if (!fee) {
+        const f = await getFee("AVAX", sender, recipient, amount)
+        fee = { gasLimit: f[1], gasPrice: f[0].recommended }
+    }
+    const wallet = new ethers.Wallet(privateKey)
+    const value = ethers.utils.parseEther(amount)
+    const nonce = await providerAVAX.getTransactionCount(sender, "latest")
+    const tx = {
+        to: recipient,
+        value: value,
+        nonce: nonce,
+        gasPrice: fee.gasPrice,
+        gasLimit: fee.gasLimit,
+        chainId: (await providerAVAX.getNetwork()).chainId
+    }
+
+    const signedTransaction = await wallet.signTransaction(tx)
+    cb({ type: 'SET_TRANSACTION_START' })
+    providerAVAX.sendTransaction(signedTransaction)
+        .then(tr => {
+            cb({ type: 'SET_TRANSACTION_STATUS', param: 'pending' })
+            trackTransactionStatus(tr.hash, cb)
+        })
+}
+
+export const getFee = async (symbol, sender, recipient, amount) => {
+    let gasPr = await providerWETH.getGasPrice()
+    const gasPrice = {
+        economy: gasPr,
+        recommended: gasPr.mul(ethers.BigNumber.from(2)),
+        priority: gasPr.mul(ethers.BigNumber.from(4))
+    }
+
+    let gasLimit
+    if (symbol === "wETH" || symbol === "ETH") {
+        const value = ethers.utils.parseEther(amount)
+        gasLimit = await providerWETH.estimateGas({
+            from: sender,
+            to: recipient,
+            value: value
+        })
+    } else { // ERC20 tokens        
+        gasLimit = fixedGasLimit
+    }
+
+    return [gasPrice, gasLimit]
+}
+
+const trackTransactionStatus = async (transactionHash, cb = console.log) => {
+    let newTransaction = true
+    // Wait for the transaction to be mined and confirmed
+    const receipt = await providerWETH.waitForTransaction(transactionHash)
+    console.log("Transaction confirmed:", receipt.transactionHash)
+
+    // Retrieve the transaction details from the receipt
+    console.log("Block number:", receipt.blockNumber)
+    console.log("Gas used:", receipt.gasUsed.toString())
+
+    // Listen for transaction events
+    providerWETH.on(transactionHash, (transaction) => {
+        console.log("Transaction status:", transaction.status)
+    })
+
+    // Listen for confirmation events
+    providerWETH.on("block", (blockNumber) => {
+        if (newTransaction)
+            cb({ type: 'SET_TRANSACTION_STATUS', param: 'confirmed' })
+        newTransaction = false
+    })
 }

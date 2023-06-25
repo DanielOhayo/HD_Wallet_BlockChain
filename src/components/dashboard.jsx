@@ -7,12 +7,7 @@ import CoinTable from "./coinTable";
 import CoinAction from "./coinAction";
 import DashTitle from "./dashTitle";
 import Loading from "./loading";
-import {
-  getBalancesGe,
-  getBalances,
-  getBalance,
-  getBalancesMain,
-} from "../utils/data";
+import { getBalancesGe, getBalance, getBalancesMain } from "../utils/data";
 
 export default function Dashboard() {
   const { state, dispatch } = useContext(Context);

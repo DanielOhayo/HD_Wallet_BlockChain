@@ -52,6 +52,8 @@ export const checkWallet = (password, key) => {
         const wallet = decryptObjectFromLocalStorage(password, key)
         if (wallet) {
             setTempWallet(wallet)
+            console.log("in getTempWallet")
+            console.log('CheckWallet', wallet)
             return true
         } else {
             return false
@@ -78,6 +80,7 @@ export const setTempWallet = (wallet) => {
 export const getTempWallet = () => {
     try {
         const wallet = localStorage.getItem(tempName)
+
         return JSON.parse(wallet)
     } catch (e) {
         return null
