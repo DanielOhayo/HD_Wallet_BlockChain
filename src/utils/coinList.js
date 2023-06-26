@@ -1,3 +1,8 @@
+import { ethers } from 'ethers'
+const APP_TESTNET = "https://net.mtw-testnet.com"
+const APP_GOERLI = "https://goerli.infura.io/v3/2ceb338b953b495aa1f3ad87c9657293"
+const APP_MAINNET = "https://avalanche-mainnet.infura.io/v3/2ceb338b953b495aa1f3ad87c9657293"
+
 export const coinList = {
     "ADA": {
         id: "cardano",
@@ -17,7 +22,8 @@ export const coinList = {
         image: "/images/cgicons/Avalanche_Circle_RedWhite_Trans.webp",
         summary: "Avalanche is a decentralized platform that enables the creation of custom blockchains. It is a platform that allows developers to create their own blockchains, which can be used to create decentralized applications. The platform is designed to be highly scalable and secure, and is based on the Proof-of-Stake consensus algorithm.",
         website: "https://www.avalabs.org/",
-        coingecko: "https://www.coingecko.com/en/coins/avalanche-2"
+        coingecko: "https://www.coingecko.com/en/coins/avalanche-2",
+        app: APP_MAINNET
     },
     "BTC": {
         id: "bitcoin",
@@ -105,7 +111,8 @@ export const coinList = {
         image: "/images/cgicons/eth.webp",
         summary: "Ethereum is a decentralized, open-source blockchain with smart contract functionality. Ether is the native cryptocurrency of the platform. It is the second-largest cryptocurrency by market capitalization, after Bitcoin.",
         website: "https://ethereum.org/en/",
-        coingecko: "https://www.coingecko.com/en/coins/ethereum"
+        coingecko: "https://www.coingecko.com/en/coins/ethereum",
+        app: APP_GOERLI
     },
     "LTC": {
         id: "litecoin",
@@ -161,6 +168,7 @@ export const coinsListTest = {
         proto: "ETH",
         website: "https://prev.morethanwallet.com/testnet/about",
         image: "/images/coins/wETH.png",
+        app: APP_TESTNET
     },
     "wBTC": {
         id: "bitcoin",

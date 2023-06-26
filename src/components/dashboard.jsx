@@ -37,29 +37,6 @@ export default function Dashboard() {
         setWalletAndFetchData(w, dispatch);
       }, 30000);
       console.log(state);
-
-      getBalancesMain(w.mainnet["AVAX"].address).then((b) => {
-        dispatch({ type: "SET_MAINNET_BALANCES", param: b });
-        dispatch({ type: "SET_BALANCES_SYM", symbol: "AVAX", param: b });
-        console.log("getBalancesMain: " + b);
-      });
-      getBalancesGe(w.mainnet["ETH"].address).then((b) => {
-        dispatch({ type: "SET_GOERLI_BALANCES", param: b });
-        dispatch({ type: "SET_BALANCES_SYM", symbol: "ETH", param: b });
-        console.log("getBalancesGe: " + b);
-      });
-      getBalance("mtw", "wETH", w.testnet["wETH"].address).then((b) => {
-        dispatch({ type: "SET_TESTNET_BALANCES", param: b });
-        dispatch({ type: "SET_BALANCES_SYM", symbol: "wETH", param: b });
-        console.log("getBalance: " + b);
-      });
-
-      dispatch({
-        type: "SET_BALANCE",
-        param:
-          parseFloat(state.balances["ETH"]) +
-          parseFloat(state.balances["AVAX"]),
-      });
     } else {
       dispatch({ type: "SET_VIEW", param: "home" });
     }

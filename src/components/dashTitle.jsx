@@ -1,10 +1,14 @@
 import { useState, useContext, useEffect } from "preact/hooks";
 import Context from "../utils/context";
 import { price, change, cost } from "../utils/utils";
+import { getBalancesGe, getBalance, getBalancesMain } from "../utils/data";
+import * as storage from "../utils/storage";
 
 export default function DashTitle() {
   const { state, dispatch } = useContext(Context);
   const [symbol, setSymbol] = useState("");
+
+  const w = storage.getTempWallet();
 
   useEffect(() => {
     if (state.selectedCoin) {
@@ -12,6 +16,15 @@ export default function DashTitle() {
         state.testnet ? state.selectedCoin.substr(1) : state.selectedCoin,
       );
     }
+    getBalancesMain(w.mainnet["AVAX"].address).then((b) => {
+      dispatch({ type: "SET_BALANCES_SYM", symbol: "AVAX", param: b });
+    });
+    getBalancesGe(w.mainnet["ETH"].address).then((b) => {
+      dispatch({ type: "SET_BALANCES_SYM", symbol: "ETH", param: b });
+    });
+    getBalance("mtw", "wETH", w.testnet["wETH"].address).then((b) => {
+      dispatch({ type: "SET_BALANCES_SYM", symbol: "wETH", param: b });
+    });
   }, [state.selectedCoin]);
   return (
     <>
@@ -32,9 +45,8 @@ export default function DashTitle() {
               </div>
               <div class="mb-0 flex justify-center gap-2 text-4xl">
                 <div class="">
-                  {(state.balances[state.selectedCoin] ?? 0).toLocaleString(
-                    "en-US",
-                    { maximumFractionDigits: 2 },
+                  {parseFloat(state.balances[state.selectedCoin] ?? 0).toFixed(
+                    2,
                   )}
                 </div>
                 <div class="text-xl pt-3 font-bold text-gray-500">
@@ -46,7 +58,17 @@ export default function DashTitle() {
         ) : (
           <div>
             <div class="text-gray-400 mb-0 text-center">Balance</div>
-            <div class="text-center text-4xl">$ {state.balance}</div>
+            <div class="text-center text-4xl">
+              ${" "}
+              {state.balances
+                ? state.testnet
+                  ? parseFloat(state.balances["wETH"]).toFixed(2)
+                  : (
+                      parseFloat(state.balances["ETH"]) +
+                      parseFloat(state.balances["AVAX"])
+                    ).toFixed(2)
+                : 0}
+            </div>
           </div>
         )}
       </div>

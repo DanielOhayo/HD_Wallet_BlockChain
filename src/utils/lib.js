@@ -1,15 +1,6 @@
 import { ethers } from 'ethers'
 import { coinList, coinsListTest } from './coinList'
-import { getBalance, getTickers, getBalancesGe } from "./data"
-const APP_TESTNET = "https://net.mtw-testnet.com"
-const APP_GOERLI = "https://goerli.infura.io/v3/2ceb338b953b495aa1f3ad87c9657293"
-const APP_MAINNET = "https://avalanche-mainnet.infura.io/v3/2ceb338b953b495aa1f3ad87c9657293"
-
-const providerWETH = new ethers.providers.JsonRpcProvider(APP_TESTNET)
-const providerETH = new ethers.providers.JsonRpcProvider(APP_GOERLI)
-const providerAVAX = new ethers.providers.JsonRpcProvider(APP_MAINNET)
-
-
+import { getBalance, getTickers } from "./data"
 export const fixedGasLimit = 80000
 
 
@@ -92,13 +83,14 @@ export const setWalletAndFetchData = (wallet, dispatch, cb = () => { }) => {
 }
 
 export const sendWETH = async (sender, privateKey, recipient, amount, fee, cb = console.log) => {
+    const provider = new ethers.providers.JsonRpcProvider(coinsListTest["wETH"].app)
     if (!fee) {
         const f = await getFee("wETH", sender, recipient, amount)
         fee = { gasLimit: f[1], gasPrice: f[0].recommended }
     }
     const wallet = new ethers.Wallet(privateKey)
     const value = ethers.utils.parseEther(amount)
-    const nonce = await providerWETH.getTransactionCount(sender, "latest")
+    const nonce = await provider.getTransactionCount(sender, "latest")
 
     const tx = {
         to: recipient,
@@ -106,25 +98,28 @@ export const sendWETH = async (sender, privateKey, recipient, amount, fee, cb = 
         nonce: nonce,
         gasPrice: fee.gasPrice,
         gasLimit: fee.gasLimit,
-        chainId: (await providerWETH.getNetwork()).chainId
+        chainId: (await provider.getNetwork()).chainId
     }
     const signedTransaction = await wallet.signTransaction(tx)
     cb({ type: 'SET_TRANSACTION_START' })
-    providerWETH.sendTransaction(signedTransaction)
+    provider.sendTransaction(signedTransaction)
         .then(tr => {
             cb({ type: 'SET_TRANSACTION_STATUS', param: 'pending' })
-            trackTransactionStatus(tr.hash, cb)
+            trackTransactionStatus("wETH", tr.hash, cb)
         })
 }
 
 export const sendETH = async (sender, privateKey, recipient, amount, fee, cb = console.log) => {
+    console.log(coinList["ETH"])
+    const provider = new ethers.providers.JsonRpcProvider(coinList["ETH"].app)
+
     if (!fee) {
         const f = await getFee("ETH", sender, recipient, amount)
         fee = { gasLimit: f[1], gasPrice: f[0].recommended }
     }
     const wallet = new ethers.Wallet(privateKey)
     const value = ethers.utils.parseEther(amount)
-    const nonce = await providerETH.getTransactionCount(sender, "latest")
+    const nonce = await provider.getTransactionCount(sender, "latest")
 
     const tx = {
         to: recipient,
@@ -132,45 +127,54 @@ export const sendETH = async (sender, privateKey, recipient, amount, fee, cb = c
         nonce: nonce,
         gasPrice: fee.gasPrice,
         gasLimit: fee.gasLimit,
-        chainId: (await providerETH.getNetwork()).chainId
+        chainId: (await provider.getNetwork()).chainId
     }
     const signedTransaction = await wallet.signTransaction(tx)
     cb({ type: 'SET_TRANSACTION_START' })
-    providerETH.sendTransaction(signedTransaction)
+    provider.sendTransaction(signedTransaction)
         .then(tr => {
             cb({ type: 'SET_TRANSACTION_STATUS', param: 'pending' })
-            trackTransactionStatus(tr.hash, cb)
+            trackTransactionStatus("ETH", tr.hash, cb)
         })
 }
 
 export const sendAVAX = async (sender, privateKey, recipient, amount, fee, cb = console.log) => {
+    const provider = new ethers.providers.JsonRpcProvider(coinList["AVAX"].app)
     if (!fee) {
         const f = await getFee("AVAX", sender, recipient, amount)
         fee = { gasLimit: f[1], gasPrice: f[0].recommended }
     }
     const wallet = new ethers.Wallet(privateKey)
     const value = ethers.utils.parseEther(amount)
-    const nonce = await providerAVAX.getTransactionCount(sender, "latest")
+    const nonce = await provider.getTransactionCount(sender, "latest")
     const tx = {
         to: recipient,
         value: value,
         nonce: nonce,
         gasPrice: fee.gasPrice,
         gasLimit: fee.gasLimit,
-        chainId: (await providerAVAX.getNetwork()).chainId
+        chainId: (await provider.getNetwork()).chainId
     }
 
     const signedTransaction = await wallet.signTransaction(tx)
     cb({ type: 'SET_TRANSACTION_START' })
-    providerAVAX.sendTransaction(signedTransaction)
+    provider.sendTransaction(signedTransaction)
         .then(tr => {
             cb({ type: 'SET_TRANSACTION_STATUS', param: 'pending' })
-            trackTransactionStatus(tr.hash, cb)
+            trackTransactionStatus("AVAX", tr.hash, cb)
         })
 }
 
 export const getFee = async (symbol, sender, recipient, amount) => {
-    let gasPr = await providerWETH.getGasPrice()
+    let provider
+    if (symbol === "wETH") {
+        provider = new ethers.providers.JsonRpcProvider(coinsListTest[symbol].app)
+    }
+    else {
+        provider = new ethers.providers.JsonRpcProvider(coinList[symbol].app)
+    }
+
+    let gasPr = await provider.getGasPrice()
     const gasPrice = {
         economy: gasPr,
         recommended: gasPr.mul(ethers.BigNumber.from(2)),
@@ -180,7 +184,7 @@ export const getFee = async (symbol, sender, recipient, amount) => {
     let gasLimit
     if (symbol === "wETH" || symbol === "ETH") {
         const value = ethers.utils.parseEther(amount)
-        gasLimit = await providerWETH.estimateGas({
+        gasLimit = await provider.estimateGas({
             from: sender,
             to: recipient,
             value: value
@@ -192,10 +196,18 @@ export const getFee = async (symbol, sender, recipient, amount) => {
     return [gasPrice, gasLimit]
 }
 
-const trackTransactionStatus = async (transactionHash, cb = console.log) => {
+const trackTransactionStatus = async (symbol, transactionHash, cb = console.log) => {
+    let provider
+    if (symbol === "wETH") {
+        provider = new ethers.providers.JsonRpcProvider(coinsListTest[symbol].app)
+    }
+    else {
+        provider = new ethers.providers.JsonRpcProvider(coinList[symbol].app)
+    }
+
     let newTransaction = true
     // Wait for the transaction to be mined and confirmed
-    const receipt = await providerWETH.waitForTransaction(transactionHash)
+    const receipt = await provider.waitForTransaction(transactionHash)
     console.log("Transaction confirmed:", receipt.transactionHash)
 
     // Retrieve the transaction details from the receipt
@@ -203,12 +215,12 @@ const trackTransactionStatus = async (transactionHash, cb = console.log) => {
     console.log("Gas used:", receipt.gasUsed.toString())
 
     // Listen for transaction events
-    providerWETH.on(transactionHash, (transaction) => {
+    provider.on(transactionHash, (transaction) => {
         console.log("Transaction status:", transaction.status)
     })
 
     // Listen for confirmation events
-    providerWETH.on("block", (blockNumber) => {
+    provider.on("block", (blockNumber) => {
         if (newTransaction)
             cb({ type: 'SET_TRANSACTION_STATUS', param: 'confirmed' })
         newTransaction = false

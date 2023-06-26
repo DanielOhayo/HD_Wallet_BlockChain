@@ -7,9 +7,6 @@ export const initState = {
     testnet: true, // test
     tickers: null,
     balances: null,
-    testnet_balances: null,
-    mainnet_balances: null,
-    goerli_balances: null,
     balance: 0,
     selectedCoin: null,
     send: false,
@@ -28,8 +25,6 @@ export const reducer = (state = InitState, action) => {
                 ...state,
                 wallet: action.param.wallet,
                 tickers: action.param.tickers,
-                // balances: action.param.balances
-                // balance: action.param.balance
             }
         case 'SET_COIN':
             return {
@@ -71,30 +66,9 @@ export const reducer = (state = InitState, action) => {
         case 'SET_BALANCES_SYM':
             let b = state.balances ?? {}
             b[action.symbol] = action.param
-            console.log("SET_BALANCES_SYM sym = " + action.symbol + " val = " + b[action.symbol])
             return {
                 ...state,
                 balances: b
-            }
-        case 'SET_BALANCES':
-            return {
-                ...state,
-                balances: action.param
-            }
-        case 'SET_TESTNET_BALANCES':
-            return {
-                ...state,
-                testnet_balances: action.param
-            }
-        case 'SET_MAINNET_BALANCES':
-            return {
-                ...state,
-                mainnet_balances: action.param
-            }
-        case 'SET_GOERLI_BALANCES':
-            return {
-                ...state,
-                goerli_balances: action.param
             }
         case 'EXIT':
             storage.clearTempWallet()

@@ -34,7 +34,6 @@ export default function Coin({ sym, val, cb }) {
           {state.testnet && state.balances ? (
             <div>
               <div class="text-gray-600 text-sm">{state.balances[sym]}</div>
-              {/* <div class="text-gray-600">${cost(state, sym)}</div> */}
             </div>
           ) : (
             <div>
@@ -43,7 +42,6 @@ export default function Coin({ sym, val, cb }) {
                   ? state.balances[sym]
                   : 0}
               </div>
-              {/* <div class="text-gray-600">0</div> */}
             </div>
           )}
           {cb && (

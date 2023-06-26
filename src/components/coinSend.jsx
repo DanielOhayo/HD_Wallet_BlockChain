@@ -19,15 +19,13 @@ export default function CoinSend({ address, symbol }) {
     addressRef.current.focus();
   }, []);
 
-  const handleConfirm = (e) => {
-    e.preventDefault();
+  const handleConfirm = () => {
+    setShowModal(false);
     const wallet = decryptObjectFromLocalStorage(
       passwordRef.current.value,
       nameRef.current.value,
     );
-    console.log("daniWallet = ", wallet);
     if (state.selectedCoin == "wETH") {
-      console.log("dani in wETH");
       sendWETH(
         wallet.testnet.wETH.address,
         wallet.testnet.wETH.privateKey,
@@ -36,7 +34,6 @@ export default function CoinSend({ address, symbol }) {
       );
     }
     if (state.selectedCoin == "ETH") {
-      console.log("dani in ETH");
       sendETH(
         wallet.mainnet.ETH.address,
         wallet.mainnet.ETH.privateKey,
@@ -46,7 +43,6 @@ export default function CoinSend({ address, symbol }) {
     }
 
     if (state.selectedCoin == "AVAX") {
-      console.log("dani in AVAX");
       sendAVAX(
         wallet.mainnet.AVAX.address,
         wallet.mainnet.AVAX.privateKey,
@@ -127,29 +123,26 @@ export default function CoinSend({ address, symbol }) {
         </div>
       </form>
       {showModal && (
-        <LayoutModal close={() => setShowModal(false)}>
-          <div class={styles.label}>Wallet name</div>
-          <div>
-            <input
-              type="text"
-              class={styles.textInput}
-              required
-              ref={nameRef}
-            />
-          </div>
-          <div class={styles.label}>Password</div>
-          <div>
-            <input
-              type="password"
-              class={styles.textInput}
-              required
-              ref={passwordRef}
-            />
-          </div>
-          <div class="mt-4 mb-2">
-            <button type="submit" onClick={handleConfirm} class={styles.button}>
-              Confirm
-            </button>
+        <LayoutModal close={() => handleConfirm()}>
+          <div className="f">
+            <div class={styles.label}>Wallet name</div>
+            <div>
+              <input
+                type="text"
+                class={styles.textInput}
+                required
+                ref={nameRef}
+              />
+            </div>
+            <div class={styles.label}>Password</div>
+            <div>
+              <input
+                type="password"
+                class={styles.textInput}
+                required
+                ref={passwordRef}
+              />
+            </div>
           </div>
         </LayoutModal>
       )}
